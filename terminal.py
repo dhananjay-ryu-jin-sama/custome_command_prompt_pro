@@ -14,13 +14,13 @@ def get_user_input(event):
     user_input_var = entry.get()
     entry.delete(0, END)
 
-    # Create a new label for the entered command
-    command_label = Label(window, text="_> " + user_input_var, font=("monospace", 12), fg='#00FF00', bg='black')
-    current_row += 1
-    command_label.grid(column=0, row=current_row, columnspan=2, sticky="w")
+    if user_input_var.strip():  # Check that the input isn't just whitespace
+        # Create a new label for the entered command
+        command_label = Label(window, text="_> " + user_input_var, font=("monospace", 12), fg='#00FF00', bg='black')
+        command_label.grid(column=0, row=current_row, columnspan=2, sticky="w")
+        current_row += 1  # Only increment row after adding the command label
 
-    # Create a new prompt label for the next command
-    current_row += 1
+    # Move the entry to a new row with the prompt '_>' for new input
     new_prompt_label = Label(window, text="_>", font=("monospace", 12), fg='#00FF00', bg='black')
     new_prompt_label.grid(column=0, row=current_row, sticky="w")
 

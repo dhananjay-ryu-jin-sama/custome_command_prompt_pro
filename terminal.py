@@ -12,6 +12,11 @@ current_row = 0  # Track the current row number
 commands_list = []  # List to store all commands entered by the user
 current_command = ""  # Variable to store the currently entered command
 
+# Function to auto-scroll to the bottom
+def auto_scroll():
+    canvas.update_idletasks()
+    canvas.yview_moveto(1.0)
+
 # Function to handle user input and create new prompt line
 def get_user_input(event):
     global current_row, current_command
@@ -39,9 +44,8 @@ def get_user_input(event):
     entry.grid(column=1, row=current_row, sticky="w")
     entry.focus()
 
-    # Scroll to the bottom of the window
-    window.update_idletasks()
-    canvas.yview_moveto(1.0)
+    # Auto-scroll to the bottom
+    window.after(100, auto_scroll)
 
 # Function to execute the command and display the output in the GUI
 def run_command(command):
@@ -54,16 +58,16 @@ def run_command(command):
 
         # Display the output in the custom terminal, left-aligned
         if output:
-            output_label = Label(scrollable_frame, text=output, font=("monospace", 12), fg='#00FF00', bg='black', anchor="w", justify="left")
+            output_label = Label(scrollable_frame, text=output, font=("monospace", 12), fg='#00FF00', bg='black', anchor="w", justify="left", wraplength=500)
             output_label.grid(column=0, row=current_row, columnspan=2, sticky="w")
             current_row += 1
         if error:
-            error_label = Label(scrollable_frame, text=error, font=("monospace", 12), fg='red', bg='black', anchor="w", justify="left")
+            error_label = Label(scrollable_frame, text=error, font=("monospace", 12), fg='red', bg='black', anchor="w", justify="left", wraplength=500)
             error_label.grid(column=0, row=current_row, columnspan=2, sticky="w")
             current_row += 1
 
     except Exception as e:
-        error_label = Label(scrollable_frame, text=str(e), font=("monospace", 12), fg='red', bg='black', anchor="w", justify="left")
+        error_label = Label(scrollable_frame, text=str(e), font=("monospace", 12), fg='red', bg='black', anchor="w", justify="left", wraplength=500)
         error_label.grid(column=0, row=current_row, columnspan=2, sticky="w")
         current_row += 1
 
@@ -75,9 +79,8 @@ def run_command(command):
     entry.grid(column=1, row=current_row, sticky="w")
     entry.focus()
 
-    # Scroll to the bottom of the window
-    window.update_idletasks()
-    canvas.yview_moveto(1.0)
+    # Auto-scroll to the bottom
+    window.after(100, auto_scroll)
 
 # Create a canvas and scrollbar
 canvas = Canvas(window, bg='black', highlightthickness=0)
@@ -86,7 +89,7 @@ scrollable_frame = Frame(canvas, bg='black')
 
 # Configure the canvas
 canvas.configure(yscrollcommand=scrollbar.set)
-canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+scrollable_frame.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
 # Create a window inside the canvas which will be scrolled with it
 canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
@@ -107,5 +110,21 @@ entry.grid(column=1, row=current_row, sticky="w")
 entry.bind("<Return>", get_user_input)
 
 entry.focus()  # Automatically focus on entry when the window opens
+
+# Bind mousewheel to scrolling
+def on_mousewheel(event):
+    canvas.yview_scroll(-1 * int(event.delta / 120), "units")
+
+canvas.bind_all("<MouseWheel>", on_mousewheel)
+
+# Bind arrow keys to scrolling
+def on_up_arrow(event):
+    canvas.yview_scroll(-1, "units")
+
+def on_down_arrow(event):
+    canvas.yview_scroll(1, "units")
+
+window.bind("<Up>", on_up_arrow)
+window.bind("<Down>", on_down_arrow)
 
 window.mainloop()
